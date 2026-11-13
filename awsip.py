@@ -12,8 +12,9 @@ def download_aws_ip_set():
     aws_ip_range_data = json.load(url)
   return aws_ip_range_data['prefixes']
 
-# Find ip given IP belongs to any AWS Service
+
 def find_aws_ip(aws_ip_range_data, ip_to_find):
+
   """Finds the AWS IP range that contains the given IP address."""
   results = []
   target_ip = ipaddress.ip_address(ip_to_find)
@@ -23,8 +24,21 @@ def find_aws_ip(aws_ip_range_data, ip_to_find):
       entry = dict(prefix)
       entry['first_ip'] = str(network.network_address)
       entry['last_ip'] = str(network.broadcast_address)
+      entry['ip_count'] = network.num_addresses
       results.append(entry)
   return results
+
+    """Finds the AWS IP range that contains the given IP address."""
+    results = []
+    target_ip = ipaddress.ip_address(ip_to_find)
+    for prefix in aws_ip_range_data:
+        network = ipaddress.ip_network(prefix['ip_prefix'])
+        if target_ip in network:
+            entry = dict(prefix)
+            entry['ip_count'] = network.num_addresses
+            results.append(entry)
+    return result
+
 
 if __name__ == '__main__':
   sys.stdout.write(json.dumps(find_aws_ip(download_aws_ip_set(), sys.argv[1]), indent=2) + "\n")
