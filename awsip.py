@@ -28,17 +28,16 @@ def find_aws_ip(aws_ip_range_data, ip_to_find):
       results.append(entry)
   return results
 
-    """Finds the AWS IP range that contains the given IP address."""
-    results = []
-    target_ip = ipaddress.ip_address(ip_to_find)
-    for prefix in aws_ip_range_data:
-        network = ipaddress.ip_network(prefix['ip_prefix'])
-        if target_ip in network:
-            entry = dict(prefix)
-            entry['ip_count'] = network.num_addresses
-            results.append(entry)
-    return result
-
+def find_smallest_subnet(ip_strings):
+  """Finds the smallest subnet that contains all the given IP addresses."""
+  if not ip_strings:
+    raise ValueError("At least one IP adress must be provided.")
+  ips = [ipaddress.ip_address(ip) for ip in ip_strings]
+  min_ip, max_ip = min(ips), max(ips)
+  subnet = ipaddress.ip_network(min_ip)
+  while max_ip not in subnet:
+    subnet = subnet.supernet()
+  return subnet
 
 if __name__ == '__main__':
   sys.stdout.write(json.dumps(find_aws_ip(download_aws_ip_set(), sys.argv[1]), indent=2) + "\n")
